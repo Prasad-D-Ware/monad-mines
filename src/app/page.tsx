@@ -74,8 +74,12 @@ export default function Home() {
       } catch {
         // If switch fails, still attempt, but warn in result
       }
-      // 0x expects addresses or the native sentinel address for ETH
-      const NATIVE_SENTINEL = "0x42cfaB6eb59D5bBB75CaBc7e2213a8dfFB1A2d2b";
+      // 0x expects addresses or the canonical native sentinel address (ETH)
+      const NATIVE_SENTINEL = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+      // Guard BEFORE requesting a quote: require USDC address when swapping to USDC
+      if (toToken.symbol === "USDC" && !toToken.address) {
+        throw new Error("USDC address not configured. Set NEXT_PUBLIC_USDC_ADDRESS in .env.local");
+      }
       const sellTokenParam = fromToken.address ? fromToken.address : NATIVE_SENTINEL;
       const buyTokenParam = toToken.address ? toToken.address : NATIVE_SENTINEL;
       // Strictly use the user's input amount; do not fallback
@@ -111,10 +115,7 @@ export default function Home() {
 
       const quote = await quoteRes.json();
 
-      // Guard for missing USDC address on Monad
-      if (toToken.symbol === "USDC" && !toToken.address) {
-        throw new Error("USDC address not configured. Set NEXT_PUBLIC_USDC_ADDRESS in .env.local");
-      }
+      // Quote obtained successfully; proceed to approvals and send
 
       // If selling an ERC20, ensure allowance is set for the AllowanceHolder spender
       if (fromToken.address && quote.allowanceTarget && quote.issues?.allowance) {
