@@ -21,7 +21,7 @@ export default function Home() {
   const [triesLeft, setTriesLeft] = useState<number>(3);
   const [status, setStatus] = useState<"playing" | "won" | "lost">("playing");
   const [swapResult, setSwapResult] = useState<null | { txHash: string; message: string }>(null);
-  const [isSwapping, setIsSwapping] = useState<boolean>(false);
+  const [, setIsSwapping] = useState<boolean>(false);
 
   const revealCell = useCallback(
     (index: number) => {
@@ -155,14 +155,14 @@ export default function Home() {
       });
 
       setSwapResult({ txHash: hash, message: "Swap submitted via 0x Swap API." });
-    } catch (e: any) {
-      const message = typeof e?.message === "string" ? e.message : "Swap failed.";
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Swap failed.";
       const userRejected = /User rejected|User rejected the request|Request rejected/i.test(message);
       setSwapResult({ txHash: "0x", message: userRejected ? "User rejected the request." : message });
     } finally {
       setIsSwapping(false);
     }
-  }, [address, walletClient, amount, fromToken, toToken]);
+  }, [address, walletClient, amount, fromToken, toToken, switchChain]);
 
   const statusText = useMemo(() => {
     if (status === "playing") return `Tries left: ${triesLeft}`;

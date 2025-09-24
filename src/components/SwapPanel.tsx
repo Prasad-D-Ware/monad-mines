@@ -32,10 +32,7 @@ export default function SwapPanel(props: Props) {
     query: { enabled: Boolean(address) },
   });
 
-  const canSwap = useMemo(() => {
-    const amt = Number(amount);
-    return Boolean(address) && amt > 0 && fromToken.symbol !== toToken.symbol;
-  }, [address, amount, fromToken.symbol, toToken.symbol]);
+  // Derived value not currently used by UI; remove to satisfy linter.
 
   const isWrongNetwork = typeof chainId === "number" && chainId !== monad.id;
 

@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     );
 
     const text = await res.text();
-    let data: any;
+    let data: unknown;
     try {
       data = JSON.parse(text);
     } catch {
@@ -56,8 +56,9 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json(data, { status: 200 });
-  } catch (e: any) {
-    return NextResponse.json({ error: e?.message || "Proxy error" }, { status: 500 });
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : "Proxy error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
