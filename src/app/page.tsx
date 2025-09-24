@@ -66,23 +66,17 @@ export default function Home() {
 
       setIsSwapping(true);
 
-      // Enforce Monad chain for both wallet and quote
       const zeroExChainId = Number(process.env.NEXT_PUBLIC_ZEROEX_CHAIN_ID || process.env.NEXT_PUBLIC_MONAD_CHAIN_ID || 10143);
-      // Attempt to switch user wallet to Monad if not already
       try {
         await switchChain({ chainId: zeroExChainId });
       } catch {
-        // If switch fails, still attempt, but warn in result
       }
-      // 0x expects addresses or the canonical native sentinel address (ETH)
       const NATIVE_SENTINEL = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
-      // Guard BEFORE requesting a quote: require USDC address when swapping to USDC
       if (toToken.symbol === "USDC" && !toToken.address) {
         throw new Error("USDC address not configured. Set NEXT_PUBLIC_USDC_ADDRESS in .env.local");
       }
       const sellTokenParam = fromToken.address ? fromToken.address : NATIVE_SENTINEL;
       const buyTokenParam = toToken.address ? toToken.address : NATIVE_SENTINEL;
-      // Strictly use the user's input amount; do not fallback
       const numericAmount = Number(amount);
       if (!amount || Number.isNaN(numericAmount) || numericAmount <= 0) {
         setSwapResult({ txHash: "0x", message: "Enter a valid amount greater than 0." });
@@ -98,12 +92,10 @@ export default function Home() {
         taker: address,
       });
 
-      // Call our server proxy to avoid CORS and keep keys server-side
       const quoteRes = await fetch(`/api/swap?${params.toString()}`, { cache: "no-store" });
 
       if (!quoteRes.ok) {
         const errText = await quoteRes.text();
-        // Try to parse server error for clarity
         try {
           const errJson = JSON.parse(errText);
           const msg = typeof errJson?.error === "string" ? errJson.error : JSON.stringify(errJson);
@@ -115,9 +107,6 @@ export default function Home() {
 
       const quote = await quoteRes.json();
 
-      // Quote obtained successfully; proceed to approvals and send
-
-      // If selling an ERC20, ensure allowance is set for the AllowanceHolder spender
       if (fromToken.address && quote.allowanceTarget && quote.issues?.allowance) {
         const currentAllowance = BigInt(quote.issues.allowance.actual || "0");
         const required = BigInt(sellAmount);
@@ -143,7 +132,7 @@ export default function Home() {
         }
       }
 
-      const tx = quote.transaction ?? quote; // v2 returns { transaction: { to, data, value, gas, gasPrice } }
+      const tx = quote.transaction ?? quote;
       const hash = await walletClient.sendTransaction({
         account: address,
         chain: monad,
@@ -171,44 +160,52 @@ export default function Home() {
   }, [status, triesLeft]);
 
   return (
-    <div className="flex gap-6 p-10 min-h-svh items-center justify-center mx-auto w-full max-w-5xl">
-      <div className="flex flex-col gap-8 flex-1">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-semibold m-0">Monad Mines</h1>
-          <p className="m-0 opacity-80">{statusText}</p>
+    <div className="flex flex-col md:flex-row gap-8 md:gap-10 p-6 md:p-10 min-h-svh items-start md:items-center justify-center mx-auto w-full max-w-6xl">
+      <div className="flex flex-col gap-6 md:gap-8 flex-1">
+        <div className="space-y-2">
+          <h1 className="m-0 text-3xl md:text-5xl font-semibold tracking-tight">
+            <span className="bg-clip-text  text-[#9488FC]">Monad</span> Mines
+          </h1>
+          <p className="m-0 opacity-80 text-sm md:text-base" aria-live="polite">{statusText}</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-5 mt-3 w-80">
-          {cells.map((cell, idx) => (
-            <button
-              key={idx}
-              onClick={() => revealCell(idx)}
-              disabled={status !== "playing" || cell !== "hidden"}
-              className={
-                "w-20 h-20 text-2xl rounded-lg border select-none " +
-                (status === "playing" && cell === "hidden" ? "cursor-pointer" : "cursor-default") +
-                " " + (cell === "hidden" ? "bg-[var(--background)] border-[var(--gray-alpha-200)]" : "bg-[var(--gray-alpha-100)] border-[var(--gray-alpha-200)]")
-              }
-            >
-              {cell === "hidden" ? "?" : cell === "diamond" ? "💎" : "❌"}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex gap-4">
-          <a className="inline-flex items-center justify-center h-12 px-5 rounded-full border border-[var(--gray-alpha-200)] hover:bg-[var(--gray-alpha-100)] transition-colors text-base font-medium min-w-40" onClick={resetGame} href="#">
-            Reset
-          </a>
-        </div>
-
-        {swapResult && (
-          <div className="font-[var(--font-geist-mono)] break-all whitespace-pre-wrap max-w-full">
-            <div><strong>Message:</strong> {swapResult.message}</div>
-            <div><strong>Tx Hash:</strong> {swapResult.txHash}</div>
+        <div className="glass-card rounded-2xl p-5 md:p-6 shadow-glass w-full max-w-md">
+          <div className="grid grid-cols-3 gap-4 md:gap-5 place-items-center">
+            {cells.map((cell, idx) => (
+              <button
+                key={idx}
+                onClick={() => revealCell(idx)}
+                disabled={status !== "playing" || cell !== "hidden"}
+                className={
+                  "size-16 md:size-20 text-2xl rounded-xl border select-none transition-all " +
+                  (status === "playing" && cell === "hidden" ? "hover:scale-[1.03] active:scale-95 cursor-pointer" : "cursor-default") +
+                  " " + (cell === "hidden" ? "bg-[var(--background)] border-[var(--gray-alpha-200)]" : "bg-[var(--gray-alpha-100)] border-[var(--gray-alpha-200)]")
+                }
+              >
+                {cell === "hidden" ? "?" : cell === "diamond" ? "💎" : "❌"}
+              </button>
+            ))}
           </div>
-        )}
+
+          <div className="flex gap-4 mt-6">
+            <button
+              className="inline-flex items-center justify-center h-11 px-5 rounded-full border border-[var(--gray-alpha-200)] bg-[var(--gray-alpha-100)] hover:bg-[var(--gray-alpha-200)] transition-colors text-sm md:text-base font-medium min-w-32"
+              onClick={resetGame}
+            >
+              Reset
+            </button>
+          </div>
+
+          {swapResult && (
+            <div className="mt-6 font-[var(--font-geist-mono)] break-all whitespace-pre-wrap max-w-full text-sm">
+              <div><strong>Message:</strong> {swapResult.message}</div>
+              <div><strong>Tx Hash:</strong> {swapResult.txHash}</div>
+            </div>
+          )}
+        </div>
       </div>
-      <div className="w-[360px]">
+
+      <div className="w-full md:w-auto">
         <SwapPanel
           controlled
           fromToken={fromToken}

@@ -32,19 +32,17 @@ export default function SwapPanel(props: Props) {
     query: { enabled: Boolean(address) },
   });
 
-  // Derived value not currently used by UI; remove to satisfy linter.
-
   const isWrongNetwork = typeof chainId === "number" && chainId !== monad.id;
 
   return (
-    <div className="sticky top-6 w-[360px] ml-auto border border-[var(--gray-alpha-200)] rounded-xl p-4 flex flex-col gap-3 bg-[var(--background)]">
+    <div className="sticky top-6 w-[360px] ml-auto glass-card rounded-2xl p-5 md:p-6 flex flex-col gap-4 shadow-glass">
       <div className="flex items-center justify-between">
-        <h3 className="m-0 text-lg font-medium">Swap</h3>
+        <h3 className="m-0 text-lg md:text-xl font-medium tracking-tight text-[#9488FC]">Swap</h3>
         <ConnectButton accountStatus="address" chainStatus="none" showBalance={false} />
       </div>
 
       {isWrongNetwork && (
-        <div className="rounded border border-amber-500/40 bg-amber-500/10 text-amber-200 p-3 text-sm">
+        <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-200 p-3 text-sm">
           <div className="flex items-center justify-between gap-3">
             <span>
               You are connected to chain ID {chainId}. Please switch to Monad (ID {monad.id}).
@@ -52,7 +50,7 @@ export default function SwapPanel(props: Props) {
             <button
               disabled={isSwitching}
               onClick={() => switchChain?.({ chainId: monad.id })}
-              className="px-3 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 disabled:opacity-50"
+              className="px-3 py-1 rounded-full bg-amber-500/20 hover:bg-amber-500/30 disabled:opacity-50"
             >
               {isSwitching ? "Switching…" : "Switch to Monad"}
             </button>
@@ -70,7 +68,7 @@ export default function SwapPanel(props: Props) {
               if (props.controlled && props.onChange) props.onChange({ fromToken: next, toToken, amount });
               else setUncontrolledFrom(next);
             }}
-            className="flex-1 px-2 py-2 rounded border bg-transparent"
+            className="flex-1 px-3 py-2 rounded-xl border border-[var(--gray-alpha-200)] bg-[var(--background)] focus:outline-none"
           >
             {TOKENS.map(t => (
               <option key={t.symbol} value={t.symbol}>{t.symbol}</option>
@@ -84,7 +82,7 @@ export default function SwapPanel(props: Props) {
               if (props.controlled && props.onChange) props.onChange({ fromToken, toToken, amount: e.target.value });
               else setUncontrolledAmount(e.target.value);
             }}
-            className="flex-1 px-3 py-2 rounded border bg-transparent"
+            className="flex-1 px-3 py-2 rounded-xl border border-[var(--gray-alpha-200)] bg-[var(--background)] focus:outline-none"
           />
         </div>
         <div className="text-xs opacity-70">
@@ -101,14 +99,13 @@ export default function SwapPanel(props: Props) {
             if (props.controlled && props.onChange) props.onChange({ fromToken, toToken: next, amount });
             else setUncontrolledTo(next);
           }}
-          className="px-2 py-2 rounded border bg-transparent"
+          className="px-3 py-2 rounded-xl border border-[var(--gray-alpha-200)] bg-[var(--background)] focus:outline-none"
         >
           {TOKENS.map(t => (
             <option key={t.symbol} value={t.symbol}>{t.symbol}</option>
           ))}
         </select>
       </div>
-      {/* No Swap button: swap is triggered by the game when diamond is found */}
     </div>
   );
 }
