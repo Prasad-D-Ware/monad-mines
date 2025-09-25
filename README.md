@@ -1,4 +1,4 @@
-<video src="./public/demo.mov" controls muted playsinline loop width="720">
+<video src="./public/demo.mp4" controls muted playsinline loop width="720">
   Your browser does not support the video tag.
 </video>
 
