@@ -6,6 +6,7 @@ import { useAccount, useSwitchChain, useWalletClient } from "wagmi";
 import { parseUnits } from "viem";
 import { TOKENS, Token } from "../types/swap";
 import { monad } from "../providers/WalletProviders";
+import Image from "next/image";
 
 type CellState = "hidden" | "miss" | "diamond";
 
@@ -182,7 +183,7 @@ export default function Home() {
                   " " + (cell === "hidden" ? "bg-[var(--background)] border-[var(--gray-alpha-200)]" : "bg-[var(--gray-alpha-100)] border-[var(--gray-alpha-200)]")
                 }
               >
-                {cell === "hidden" ? "?" : cell === "diamond" ? "💎" : "❌"}
+                {cell === "hidden" ?  <div className="flex items-center justify-center"><Image src={"/monad.jpeg"} height={50} width={50} alt="monad" className="rounded-full"/></div> : cell === "diamond" ? "💎" : "❌"}
               </button>
             ))}
           </div>
