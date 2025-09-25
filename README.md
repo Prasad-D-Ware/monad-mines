@@ -1,5 +1,7 @@
-[▶️ Watch the demo](public/demo.mp4)
-
+<video controls muted playsinline loop width="720">
+  <source src="public/demo.mp4" type="video/mp4" />
+  Your browser does not support the video tag. Here is a <a href="public/demo.mp4">link to the video</a>.
+</video>
 Monad Mines (3x3) — Next.js + TypeScript
 =================================================
 
