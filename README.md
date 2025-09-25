@@ -1,6 +1,4 @@
-<video src="./public/demo.mp4" controls muted playsinline loop width="720">
-  Your browser does not support the video tag.
-</video>
+[▶️ Watch the demo](public/demo.mp4)
 
 Monad Mines (3x3) — Next.js + TypeScript
 =================================================
