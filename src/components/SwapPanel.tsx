@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useBalance, useChainId, useSwitchChain } from "wagmi";
 import { TOKENS, Token } from "../types/swap";
 import { monad } from "../providers/WalletProviders";
+import Image from "next/image";
 
 type Props = {
   controlled?: boolean;
@@ -18,12 +19,11 @@ export default function SwapPanel(props: Props) {
   const { address } = useAccount();
   const chainId = useChainId();
   const { switchChain, isPending: isSwitching } = useSwitchChain();
-  const [uncontrolledFrom, setUncontrolledFrom] = useState<Token>(TOKENS[0]);
-  const [uncontrolledTo, setUncontrolledTo] = useState<Token>(TOKENS[1]);
   const [uncontrolledAmount, setUncontrolledAmount] = useState<string>("");
 
-  const fromToken = props.controlled ? (props.fromToken ?? TOKENS[0]) : uncontrolledFrom;
-  const toToken = props.controlled ? (props.toToken ?? TOKENS[1]) : uncontrolledTo;
+  // Hardcode swap direction: MON -> USDC
+  const fromToken: Token = TOKENS[0]; // MON
+  const toToken: Token = TOKENS[1];   // USDC
   const amount = props.controlled ? (props.amount ?? "") : uncontrolledAmount;
 
   const { data: fromBalance } = useBalance({
@@ -61,19 +61,7 @@ export default function SwapPanel(props: Props) {
       <div className="flex flex-col gap-2">
         <label className="text-xs opacity-80">From</label>
         <div className="flex gap-2">
-          <select
-            value={fromToken.symbol}
-            onChange={(e) => {
-              const next = TOKENS.find(t => t.symbol === e.target.value)!;
-              if (props.controlled && props.onChange) props.onChange({ fromToken: next, toToken, amount });
-              else setUncontrolledFrom(next);
-            }}
-            className="flex-1 px-3 py-2 rounded-xl border border-[var(--gray-alpha-200)] bg-[var(--background)] focus:outline-none"
-          >
-            {TOKENS.map(t => (
-              <option key={t.symbol} value={t.symbol}>{t.symbol}</option>
-            ))}
-          </select>
+          <Image src={"/monad.jpeg"} height={50} width={50} alt="monad" className="rounded-full"/>
           <input
             inputMode="decimal"
             placeholder="0.0"
@@ -92,19 +80,10 @@ export default function SwapPanel(props: Props) {
 
       <div className="flex flex-col gap-2">
         <label className="text-xs opacity-80">To</label>
-        <select
-          value={toToken.symbol}
-          onChange={(e) => {
-            const next = TOKENS.find(t => t.symbol === e.target.value)!;
-            if (props.controlled && props.onChange) props.onChange({ fromToken, toToken: next, amount });
-            else setUncontrolledTo(next);
-          }}
-          className="px-3 py-2 rounded-xl border border-[var(--gray-alpha-200)] bg-[var(--background)] focus:outline-none"
-        >
-          {TOKENS.map(t => (
-            <option key={t.symbol} value={t.symbol}>{t.symbol}</option>
-          ))}
-        </select>
+        <div className="flex items-center justify-start gap-4">
+         <Image src={"/usdc.png"} height={50} width={50} alt="monad" className="rounded-full"/> 
+         <div className="text-xl font-bold">USDC</div>
+         </div>
       </div>
     </div>
   );
